@@ -1,4 +1,5 @@
 import { initConfigContext } from "./cli/config-manager/config-context"
+import { initI18n } from "./shared/i18n"
 import type { Hooks, Plugin, PluginModule } from "@opencode-ai/plugin"
 
 import type { HookName } from "./config"
@@ -19,6 +20,7 @@ import { detectExternalSkillPlugin, getSkillPluginConflictWarning } from "./shar
 import { startBackgroundCheck as startTmuxCheck } from "./tools/interactive-bash"
 
 const serverPlugin: Plugin = async (input, _options): Promise<Hooks> => {
+  initI18n()
   installAgentSortShim()
   initConfigContext("opencode", null)
   log("[oh-my-openagent] ENTRY - plugin loading", {

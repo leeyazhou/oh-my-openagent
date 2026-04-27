@@ -1,3 +1,4 @@
+export * from "./i18n"
 export * from "./frontmatter"
 export * from "./command-executor"
 export * from "./contains-path"

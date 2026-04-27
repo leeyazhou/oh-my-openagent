@@ -1,3 +1,4 @@
+import { t } from "../../shared/i18n"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { TrackedTask, TaskStatus, ModelFallbackInfo } from "./types"
 import type { ConcurrencyManager } from "../background-agent/concurrency"
@@ -191,8 +192,8 @@ export class TaskToastManager {
     const queued = this.getQueuedTasks()
 
     const title = newTask.isBackground
-      ? `New Background Task`
-      : `New Task Executed`
+      ? t("toast.new_background_task")
+      : t("toast.new_task_executed")
 
     tuiClient.tui.showToast({
       body: {
@@ -223,7 +224,7 @@ export class TaskToastManager {
 
     tuiClient.tui.showToast({
       body: {
-        title: "Task Completed",
+        title: t("toast.task_completed"),
         message,
         variant: "success",
         duration: 5000,
