@@ -1,5 +1,6 @@
 import { initConfigContext } from "./cli/config-manager/config-context"
 import { initI18n } from "./shared/i18n"
+import { initI18n } from "./shared/i18n"
 import type { Hooks, Plugin, PluginModule } from "@opencode-ai/plugin"
 
 import type { HookName } from "./config"
