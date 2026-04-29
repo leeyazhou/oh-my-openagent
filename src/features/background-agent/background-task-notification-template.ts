@@ -84,8 +84,8 @@ export function buildBackgroundTaskNotificationText(input: {
 
     const hasFailures = failedTasks.length > 0
     const header = hasFailures
-      ? `[ALL BACKGROUND TASKS FINISHED - ${failedTasks.length} FAILED]`
-      : "[ALL BACKGROUND TASKS COMPLETE]"
+      ? `[所有后台任务已结束 - ${failedTasks.length} 失败]`
+      : "[所有后台任务已完成]"
 
     let body = ""
     if (succeededText) {
@@ -112,8 +112,8 @@ Use \`background_output(task_id="<id>")\` to retrieve each result.${hasFailures 
   return `<system-reminder>
 [BACKGROUND TASK ${statusText}]
 **ID:** \`${task.id}\`
-**Description:** ${safeDescription(task)}
-**Duration:** ${duration}${errorInfo}
+**描述:** ${safeDescription(task)}
+**耗时:** ${duration}${errorInfo}
 
 **${remainingCount} task${remainingCount === 1 ? "" : "s"} still in progress.** You WILL be notified when ALL complete.
 ${isFailure ? "**ACTION REQUIRED:** This task failed. Check the error and decide whether to retry, cancel remaining tasks, or continue." : "Do NOT poll - continue productive work."}
