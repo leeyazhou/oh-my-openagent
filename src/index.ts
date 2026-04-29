@@ -22,8 +22,6 @@ import { createPluginPostHog, getPostHogDistinctId } from "./shared/posthog"
 import { getPluginLoadedCaptureState } from "./shared/posthog-activity-state"
 
 const serverPlugin: Plugin = async (input, _options): Promise<Hooks> => {
-  initI18n()
-  installAgentSortShim()
   initConfigContext("opencode", null)
   log("[oh-my-openagent] ENTRY - plugin loading", {
     directory: input.directory,
