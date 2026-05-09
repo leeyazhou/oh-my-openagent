@@ -1,15 +1,22 @@
-import { locales } from "../locales"
+import { locales, type SupportedLocale, type TranslationKey } from "../locales"
 
-let currentLang = "en"
-let fallbackLang = "en"
+let currentLang: SupportedLocale = "en"
+let fallbackLang: SupportedLocale = "en"
 
-function detectLocale(): string {
+function isSupportedLocale(locale: string): locale is SupportedLocale {
+  return locale in locales
+}
+
+function isTranslationKey(key: string): key is TranslationKey {
+  return key in locales.en
+}
+
+function detectLocale(): SupportedLocale {
   const envLang = process.env.LANG ?? ""
   const lang = envLang.split(".")[0]?.split("_")[0]?.toLowerCase() ?? "en"
 
-  const supported: Record<string, string> = {
-    zh: "zh-CN",
-    ja: "ja",
+  const supported: Record<string, SupportedLocale> = {
+    zh: "zh",
   }
 
   return supported[lang] ?? "en"
@@ -20,20 +27,20 @@ function detectLocale(): string {
  * Auto-detects locale from LANG env var if not specified.
  */
 export function initI18n(opts?: { locale?: string; fallback?: string }): void {
-  currentLang = opts?.locale ?? detectLocale()
-  if (opts?.fallback) {
-    fallbackLang = opts.fallback
-  }
+  currentLang = opts?.locale && isSupportedLocale(opts.locale)
+    ? opts.locale
+    : detectLocale()
+  fallbackLang = opts?.fallback && isSupportedLocale(opts.fallback)
+    ? opts.fallback
+    : "en"
 
-  if (!locales[currentLang]) {
-    currentLang = "en"
-  }
+  if (!isSupportedLocale(currentLang)) currentLang = "en"
 }
 
 /**
  * Get the current locale code.
  */
-export function getLocale(): string {
+export function getLocale(): SupportedLocale {
   return currentLang
 }
 
@@ -41,22 +48,27 @@ export function getLocale(): string {
  * Set locale at runtime.
  */
 export function setLocale(lang: string): void {
-  if (locales[lang]) {
+  if (isSupportedLocale(lang)) {
     currentLang = lang
   }
 }
 
 /**
  * Translate a key with optional interpolation parameters.
+ * Accepts typed TranslationKey for IntelliSense and validation;
+ * falls back to string for dynamic/custom keys (e.g. tests).
  */
+export function t(key: TranslationKey, params?: Record<string, string | number>): string
+export function t(key: string, params?: Record<string, string | number>): string
 export function t(key: string, params?: Record<string, string | number>): string {
-  const msg =
-    locales[currentLang]?.[key] ??
-    locales[fallbackLang]?.[key] ??
-    key
+  let msg = key
+
+  if (isTranslationKey(key)) {
+    msg = locales[currentLang][key] ?? locales[fallbackLang][key] ?? key
+  }
 
   if (!params) return msg
-  return msg.replace(/\{\{(\w+)\}\}/g, (_, name: string) => {
+  return msg.replace(/\{\{(\w+)\}\}/g, (_match: string, name: string) => {
     const value = params[name]
     return value != null ? String(value) : `{{${name}}}`
   })

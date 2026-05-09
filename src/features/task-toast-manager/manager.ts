@@ -1,7 +1,7 @@
-import { t } from "../../shared/i18n"
 import type { PluginInput } from "@opencode-ai/plugin"
-import type { TrackedTask, TaskStatus, ModelFallbackInfo } from "./types"
+import { t } from "../../shared/i18n"
 import type { ConcurrencyManager } from "../background-agent/concurrency"
+import type { ModelFallbackInfo, TaskStatus, TrackedTask } from "./types"
 
 type OpencodeClient = PluginInput["client"]
 
@@ -120,7 +120,7 @@ export class TaskToastManager {
     const total = running.length + queued.length
     const limit = this.concurrencyManager.getConcurrencyLimit("default")
     if (limit === Infinity) return ""
-    return ` [${total}/${limit}]`
+    return t("toast.concurrency_info", { total, limit })
   }
 
   private buildTaskListMessage(newTask: TrackedTask): string {
@@ -137,28 +137,30 @@ export class TaskToastManager {
     }
     const lines: string[] = []
 
-    const isFallback = newTask.modelInfo && (
-      newTask.modelInfo.type === "inherited" ||
-      newTask.modelInfo.type === "system-default" ||
-      newTask.modelInfo.type === "runtime-fallback"
-    )
-    if (isFallback) {
-      const suffixMap: Record<"inherited" | "system-default" | "runtime-fallback", string> = {
-        inherited: " (inherited from parent)",
-        "system-default": " (system default fallback)",
-        "runtime-fallback": " (runtime fallback)",
-      }
-      const suffix = suffixMap[newTask.modelInfo!.type as "inherited" | "system-default" | "runtime-fallback"]
-      lines.push(`[FALLBACK] Model: ${newTask.modelInfo!.model}${suffix}`)
+    const modelInfo = newTask.modelInfo
+    if (
+      modelInfo && (
+        modelInfo.type === "inherited" ||
+        modelInfo.type === "system-default" ||
+        modelInfo.type === "runtime-fallback"
+      )
+    ) {
+
+      const suffix = modelInfo.type === "inherited"
+        ? t("toast.fallback_inherited")
+        : modelInfo.type === "system-default"
+          ? t("toast.fallback_system_default")
+          : t("toast.fallback_runtime")
+      lines.push(t("toast.fallback_prefix", { model: modelInfo.model ?? "", suffix }))
       lines.push("")
     }
 
     if (running.length > 0) {
-      lines.push(`Running (${running.length}):${concurrencyInfo}`)
+      lines.push(t("toast.task_list_running", { count: running.length }) + concurrencyInfo)
       for (const task of running) {
         const duration = this.formatDuration(task.startedAt)
         const bgIcon = task.isBackground ? "[BG]" : "[RUN]"
-        const isNew = task.id === newTask.id ? " ← NEW" : ""
+        const isNew = task.id === newTask.id ? t("toast.task_list_new") : ""
         const taskId = formatTaskIdentifier(task)
         const skillsInfo = task.skills?.length ? ` [${task.skills.join(", ")}]` : ""
         lines.push(`${bgIcon} ${task.description} (${taskId})${skillsInfo} - ${duration}${isNew}`)
@@ -167,13 +169,13 @@ export class TaskToastManager {
 
     if (queued.length > 0) {
       if (lines.length > 0) lines.push("")
-      lines.push(`Queued (${queued.length}):`)
+      lines.push(t("toast.task_list_queued", { count: queued.length }) + concurrencyInfo)
       for (const task of queued) {
         const bgIcon = task.isBackground ? "[Q]" : "[W]"
         const taskId = formatTaskIdentifier(task)
         const skillsInfo = task.skills?.length ? ` [${task.skills.join(", ")}]` : ""
-        const isNew = task.id === newTask.id ? " ← NEW" : ""
-        lines.push(`${bgIcon} ${task.description} (${taskId})${skillsInfo} - Queued${isNew}`)
+        const isNew = task.id === newTask.id ? t("toast.task_list_new") : ""
+        lines.push(`${bgIcon} ${task.description} (${taskId})${skillsInfo} - ${t("toast.status_queued")}${isNew}`)
       }
     }
 
@@ -198,7 +200,7 @@ export class TaskToastManager {
     tuiClient.tui.showToast({
       body: {
         title,
-        message: message || `${newTask.description} (${newTask.agent})`,
+        message,
         variant: "info",
         duration: running.length + queued.length > 2 ? 5000 : 3000,
       },
@@ -217,9 +219,9 @@ export class TaskToastManager {
     const remaining = this.getRunningTasks()
     const queued = this.getQueuedTasks()
 
-    let message = `"${task.description}" finished in ${task.duration}`
+    let message = t("toast.task_completion_message", { description: task.description, duration: task.duration })
     if (remaining.length > 0 || queued.length > 0) {
-      message += `\n\nStill running: ${remaining.length} | Queued: ${queued.length}`
+      message += `\n\n${t("toast.task_completion_remaining", { running: remaining.length, queued: queued.length })}`
     }
 
     tuiClient.tui.showToast({

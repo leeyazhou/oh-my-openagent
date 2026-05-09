@@ -1,16 +1,18 @@
-declare const require: (name: string) => any
-const { describe, test, expect, beforeEach, afterEach, mock } = require("bun:test")
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
+import type { PluginInput } from "@opencode-ai/plugin"
+import { initI18n } from "../../shared/i18n"
 import type { ConcurrencyManager } from "../background-agent/concurrency"
 
 type TaskToastManagerClass = typeof import("./manager").TaskToastManager
+type MockClient = PluginInput["client"] & {
+  tui: {
+    showToast: ReturnType<typeof mock>
+  }
+}
 
 describe("TaskToastManager", () => {
   let TaskToastManager: TaskToastManagerClass
-  let mockClient: {
-    tui: {
-      showToast: ReturnType<typeof mock>
-    }
-  }
+  let mockClient: MockClient
   let toastManager: InstanceType<TaskToastManagerClass>
   let mockConcurrencyManager: ConcurrencyManager
 
@@ -27,8 +29,8 @@ describe("TaskToastManager", () => {
     const mod = await import("./manager")
     TaskToastManager = mod.TaskToastManager
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toastManager = new TaskToastManager(mockClient as any, mockConcurrencyManager)
+    initI18n({ locale: "en", fallback: "en" })
+    toastManager = new TaskToastManager(mockClient, mockConcurrencyManager)
   })
 
   afterEach(() => {
@@ -114,8 +116,7 @@ describe("TaskToastManager", () => {
         getQueuedCount: mock(() => 1),
       } as unknown as ConcurrencyManager
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const managerWithConcurrency = new TaskToastManager(mockClient as any, mockConcurrencyWithCounts)
+      const managerWithConcurrency = new TaskToastManager(mockClient, mockConcurrencyWithCounts)
 
       // when - a task is added
       managerWithConcurrency.addTask({
@@ -360,8 +361,7 @@ describe("TaskToastManager", () => {
       const limitedConcurrency = {
         getConcurrencyLimit: mock(() => 1),
       } as unknown as ConcurrencyManager
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const limitedManager = new TaskToastManager(mockClient as any, limitedConcurrency)
+      const limitedManager = new TaskToastManager(mockClient, limitedConcurrency)
 
       limitedManager.addTask({
         id: "task_running",

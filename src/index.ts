@@ -1,22 +1,20 @@
-import { initConfigContext } from "./cli/config-manager/config-context"
-import { initI18n } from "./shared/i18n"
 import type { Hooks, Plugin, PluginModule } from "@opencode-ai/plugin"
 
+import { initConfigContext } from "./cli/config-manager/config-context"
 import type { HookName } from "./config"
-
 import { createHooks } from "./create-hooks"
 import { createManagers } from "./create-managers"
 import { createRuntimeTmuxConfig, isTmuxIntegrationEnabled } from "./create-runtime-tmux-config"
 import { createTools } from "./create-tools"
 import { initializeOpenClaw } from "./openclaw"
-import { createPluginInterface } from "./plugin-interface"
-
 import { loadPluginConfig } from "./plugin-config"
+import { createPluginInterface } from "./plugin-interface"
 import { createModelCacheState } from "./plugin-state"
-import { createFirstMessageVariantGate } from "./shared/first-message-variant"
 import { injectServerAuthIntoClient, log, logLegacyPluginStartupWarning } from "./shared"
 import { installAgentSortShim, setAgentSortOrder } from "./shared/agent-sort-shim"
 import { detectExternalSkillPlugin, getSkillPluginConflictWarning } from "./shared/external-plugin-detector"
+import { createFirstMessageVariantGate } from "./shared/first-message-variant"
+import { initI18n } from "./shared/i18n"
 import { startBackgroundCheck as startTmuxCheck } from "./tools/interactive-bash"
 
 const serverPlugin: Plugin = async (input, _options): Promise<Hooks> => {
@@ -135,13 +133,13 @@ const pluginModule: PluginModule = {
 export default pluginModule
 
 export type {
-  OhMyOpenCodeConfig,
   AgentName,
   AgentOverrideConfig,
   AgentOverrides,
-  McpName,
-  HookName,
   BuiltinCommandName,
+  HookName,
+  McpName,
+  OhMyOpenCodeConfig,
 } from "./config"
 
 export type { ConfigLoadError } from "./shared/config-errors"
