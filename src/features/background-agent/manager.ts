@@ -762,10 +762,10 @@ export class BackgroundManager {
       return
     }
 
-    await input.onSessionCreated?.(sessionID)
-    this.settlePreStartDescendantReservation(task)
     subagentSessions.add(sessionID)
     setSessionAgent(sessionID, input.agent)
+    await input.onSessionCreated?.(sessionID)
+    this.settlePreStartDescendantReservation(task)
 
     if (this.tasks.get(task.id)?.status === "cancelled") {
       clearDelegatedChildSessionBootstrap(sessionID)
