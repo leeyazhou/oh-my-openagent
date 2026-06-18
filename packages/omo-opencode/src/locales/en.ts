@@ -13,6 +13,10 @@ const locales = {
   "toast.fallback_system_default": " (system default fallback)",
   "toast.fallback_runtime": " (runtime fallback)",
   "toast.concurrency_info": " [{{total}}/{{limit}}]",
+  "notification.bg_task.result_ready": "[BACKGROUND TASK RESULT READY]",
+  "notification.bg_task.failed_status": "[BACKGROUND TASK {{status}}]",
+  "notification.bg_task.all_complete": "[BACKGROUND TASK COMPLETED]\n[ALL BACKGROUND TASKS COMPLETE]",
+  "notification.bg_task.all_finished_with_failures": "[ALL BACKGROUND TASKS FINISHED - {{count}} FAILED]",
 } as const
 
 export type TranslationKey = keyof typeof locales

@@ -15,6 +15,10 @@ const overrides: Partial<Record<TranslationKey, string>> = {
   "toast.fallback_system_default": " (系统默认回退)",
   "toast.fallback_runtime": " (运行时回退)",
   "toast.concurrency_info": " [{{total}}/{{limit}}]",
+  "notification.bg_task.result_ready": "[后台任务结果已就绪]",
+  "notification.bg_task.failed_status": "[后台任务 {{status}}]",
+  "notification.bg_task.all_complete": "[后台任务已完成]\n[所有后台任务已全部完成]",
+  "notification.bg_task.all_finished_with_failures": "[所有后台任务已结束 - {{count}} 个失败]",
 }
 
 const locales = {
