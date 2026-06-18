@@ -1,3 +1,4 @@
+import { t } from "../../shared/i18n"
 import type { BackgroundTaskAttempt, BackgroundTaskStatus } from "./types"
 
 export type BackgroundTaskNotificationStatus = "COMPLETED" | "CANCELLED" | "INTERRUPTED" | "ERROR"
@@ -84,8 +85,8 @@ export function buildBackgroundTaskNotificationText(input: {
 
     const hasFailures = failedTasks.length > 0
     const header = hasFailures
-      ? `[ALL BACKGROUND TASKS FINISHED - ${failedTasks.length} FAILED]`
-      : "[BACKGROUND TASK COMPLETED]\n[ALL BACKGROUND TASKS COMPLETE]"
+      ? t("notification.bg_task.all_finished_with_failures", { count: failedTasks.length })
+      : t("notification.bg_task.all_complete")
 
     let body = ""
     if (succeededText) {
@@ -108,7 +109,9 @@ Use \`background_output(task_id="<id>")\` to retrieve each result.${hasFailures 
   }
 
   const isFailure = statusText !== "COMPLETED"
-  const header = isFailure ? `[BACKGROUND TASK ${statusText}]` : "[BACKGROUND TASK RESULT READY]"
+  const header = isFailure
+    ? t("notification.bg_task.failed_status", { status: statusText })
+    : t("notification.bg_task.result_ready")
 
   return `<system-reminder>
 ${header}

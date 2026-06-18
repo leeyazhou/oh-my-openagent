@@ -1,5 +1,6 @@
-import { describe, expect, test } from "bun:test"
+import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import { buildBackgroundTaskNotificationText } from "./background-task-notification-template"
+import { initI18n } from "../../shared/i18n"
 import { unsafeTestValue } from "../../../../../test-support/unsafe-test-value"
 
 describe("buildBackgroundTaskNotificationText", () => {
@@ -291,6 +292,136 @@ Use \`background_output(task_id="<id>")\` to retrieve each result.
       // then
       expect(notification).not.toContain("undefined")
       expect(notification).toContain("bg_xyz789")
+    })
+  })
+
+  describe("#given locale is zh", () => {
+    beforeEach(() => {
+      initI18n({ locale: "zh", fallback: "en" })
+    })
+
+    afterEach(() => {
+      initI18n({ locale: "en", fallback: "en" })
+    })
+
+    test("#when partial COMPLETED notification #then the result-ready header is localized", () => {
+      // given
+      const notification = buildBackgroundTaskNotificationText({
+        task: {
+          id: "task-1",
+          description: "索引仓库",
+          status: "completed",
+        },
+        duration: "42s",
+        statusText: "COMPLETED",
+        allComplete: false,
+        remainingCount: 1,
+        completedTasks: [],
+      })
+
+      // then
+      expect(notification).toContain("[后台任务结果已就绪]")
+      expect(notification).not.toContain("[BACKGROUND TASK RESULT READY]")
+      expect(notification).toContain("**ID:** `task-1`")
+    })
+
+    test("#when partial ERROR notification #then the failed header localizes the bracket wrapper but preserves the uppercase status token", () => {
+      // given
+      const notification = buildBackgroundTaskNotificationText({
+        task: {
+          id: "task-2",
+          description: "汇总日志",
+          status: "error",
+          error: "超时",
+        },
+        duration: "3m 4s",
+        statusText: "ERROR",
+        allComplete: false,
+        remainingCount: 2,
+        completedTasks: [],
+      })
+
+      // then
+      expect(notification).toContain("[后台任务 ERROR]")
+      expect(notification).not.toContain("[BACKGROUND TASK ERROR]")
+      expect(notification).toContain("ERROR")
+    })
+
+    test("#when all-complete successful notification #then both header lines localize", () => {
+      // given
+      const notification = buildBackgroundTaskNotificationText({
+        task: {
+          id: "task-3",
+          description: "回退任务",
+          status: "completed",
+        },
+        duration: "10s",
+        statusText: "COMPLETED",
+        allComplete: true,
+        remainingCount: 0,
+        completedTasks: [
+          { id: "task-3", description: "回退任务", status: "completed" },
+        ],
+      })
+
+      // then
+      expect(notification).toContain("[后台任务已完成]")
+      expect(notification).toContain("[所有后台任务已全部完成]")
+      expect(notification).not.toContain("[BACKGROUND TASK COMPLETED]")
+      expect(notification).not.toContain("[ALL BACKGROUND TASKS COMPLETE]")
+    })
+
+    test("#when all-complete with failures #then the failure header interpolates the count", () => {
+      // given
+      const notification = buildBackgroundTaskNotificationText({
+        task: {
+          id: "task-3",
+          description: "回退任务",
+          status: "error",
+          error: "被拒绝",
+        },
+        duration: "10s",
+        statusText: "ERROR",
+        allComplete: true,
+        remainingCount: 0,
+        completedTasks: [
+          { id: "task-1", description: "索引仓库", status: "completed" },
+          { id: "task-2", description: "汇总日志", status: "cancelled", error: "用户中止" },
+          { id: "task-3", description: "回退任务", status: "error", error: "被拒绝" },
+        ],
+      })
+
+      // then
+      expect(notification).toContain("[所有后台任务已结束 - 2 个失败]")
+      expect(notification).not.toContain("[ALL BACKGROUND TASKS FINISHED - 2 FAILED]")
+      expect(notification).toContain("**Completed:**")
+      expect(notification).toContain("**Failed:**")
+    })
+  })
+
+  describe("#given locale is en", () => {
+    beforeEach(() => {
+      initI18n({ locale: "en", fallback: "en" })
+    })
+
+    test("#when partial COMPLETED notification #then the English header is preserved (no locale fallback surprises)", () => {
+      // given
+      const notification = buildBackgroundTaskNotificationText({
+        task: {
+          id: "task-1",
+          description: "Index repo",
+          status: "completed",
+        },
+        duration: "42s",
+        statusText: "COMPLETED",
+        allComplete: false,
+        remainingCount: 1,
+        completedTasks: [],
+      })
+
+      // then
+      expect(notification).toContain("[BACKGROUND TASK RESULT READY]")
+      expect(notification).not.toContain("[后台任务")
     })
   })
 })
